@@ -1,0 +1,4 @@
+docker compose up -d
+
+docker exec -it hexo0212 bash
+hexo clean && hexo genereate && hexo depoly

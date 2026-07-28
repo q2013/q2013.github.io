@@ -1,0 +1,42 @@
+name: Deploy Hexo Blog
+
+on:
+  push:
+    branches:
+      - main  # 当推送到 main 分支时触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # 如果你的主题使用了 git submodule，需要这个
+
+      - name: 设置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"  # ！重要：请改成你本地使用的 Node.js 主版本号
+
+      - name: 缓存 node_modules 加速
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-hexo-cache
+          restore-keys: |
+            ${{ runner.OS }}-hexo-cache
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 生成静态文件
+        run: npm run build  # 这对应你 package.json 里的 "build": "hexo generate"
+
+      - name: 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public  # Hexo 默认生成的目录
+          publish_branch: gh-pages # 部署到 gh-pages 分支
+          force_orphan: true # 清理 gh-pages 分支的历史，保持干净（可选）
